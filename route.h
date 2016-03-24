@@ -21,8 +21,8 @@ typedef struct _UListD
 
 typedef struct 
 {
-	int begin;
-	int end;
+	unsigned int begin;
+	unsigned int end;
 	UListD* next;
 	unsigned long size;
 }ListD;
@@ -76,6 +76,6 @@ typedef struct
 	int edgeID;
 	int stepth;
 }ReflectNode,*ReflectNodeLink;
-void search_route(char *graph[5000], int edge_num, char *condition);
+void search_route(char *graph[5000], unsigned int edge_num, char *condition);
 int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &result);
 #endif
