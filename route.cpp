@@ -51,7 +51,7 @@ void sToVD(char *src, ListD* output)
 	while(1)
 	{
 
-		if(src[index]=='|'||src[index]=='\0')//NULL->\0
+		if(src[index]=='|'||src[index]>'9'||src[index]<'0')//NULL->\0
 		{
 			end=index-1;
 			int sum=0;
@@ -69,7 +69,7 @@ void sToVD(char *src, ListD* output)
 			bit++;
 			begin=index+1;
 
-			if(src[index]=='\0')//NULL->\0
+			if(src[index]>'9'||src[index]<'0')//NULL->\0
 			{
 				// output[bit]=-1;
 				output->size=bit-2;
