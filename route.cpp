@@ -51,7 +51,7 @@ void sToVD(char *src, ListD* output)
 	while(1)
 	{
 
-		if(src[index]=='|'||src[index]>'9'||src[index]<'0')//NULL->\0
+		if(src[index]>'9'||src[index]<'0')//NULL->\0
 		{
 			end=index-1;
 			int sum=0;
@@ -69,7 +69,7 @@ void sToVD(char *src, ListD* output)
 			bit++;
 			begin=index+1;
 
-			if(src[index]>'9'||src[index]<'0')//NULL->\0
+			if(src[index]!='|')//NULL->\0
 			{
 				// output[bit]=-1;
 				output->size=bit-2;
@@ -128,7 +128,7 @@ void BFSInit(ALGraph* graph,ListD* demand)
 {
 	UListD* pD=demand->next->next;
 
-	int count=0;
+	// int count=0;
 	while(pD)
 	{
 		int source=pD->data;
@@ -179,7 +179,7 @@ void BFSInit(ALGraph* graph,ListD* demand)
 			// }
 		}
 
-	    count++;
+	    // count++;
 		pD=pD->next;
 	}
 
@@ -680,11 +680,11 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 				printf("%d ",demandVisited[i]);
 			}
 
-			printf("Info List;\n");
-			for(unsigned int i=0;i<graph->vexNum;i++)
-			{
-				printf("%d:%d\n",i,graph->adjList[i].infoVal);
-			}
+			// printf("Info List;\n");
+			// for(unsigned int i=0;i<graph->vexNum;i++)
+			// {
+			// 	printf("%d:%d\n",i,graph->adjList[i].infoVal);
+			// }
 
 			if(dijMa(graph,path.back(),des,visited,result)==-1)
 			{
@@ -998,7 +998,9 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 		printf("%d|",tmp->data);
 		tmp=tmp->next;
 	}
+	
 	printf("\n");
+
 
 	// printf("%lu\n",demandList.size);
 	// for (int i = 0; i < 5; ++i)
@@ -1021,11 +1023,11 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 	// return ;
 //---------------------------1000000 0 0 0 0 0 0 0 0 0 0
 
-	printf("Info List;\n");
-	for(unsigned int i=0;i<graph.vexNum;i++)
-	{
-		printf("%d:%d\n",i,graph.adjList[i].infoVal);
-	}
+	// printf("Info List;\n");
+	// for(unsigned int i=0;i<graph.vexNum;i++)
+	// {
+	// 	printf("%d:%d\n",i,graph.adjList[i].infoVal);
+	// }
 
 
 	std::vector<int>edgePath;
