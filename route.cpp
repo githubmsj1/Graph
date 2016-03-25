@@ -51,7 +51,7 @@ void sToVD(char *src, ListD* output)
 	while(1)
 	{
 
-		if(src[index]=='|'||src[index]==(char)NULL)
+		if(src[index]=='|'||src[index]=='\0')//NULL->\0
 		{
 			end=index-1;
 			int sum=0;
@@ -69,7 +69,7 @@ void sToVD(char *src, ListD* output)
 			bit++;
 			begin=index+1;
 
-			if(src[index]==(char)NULL)
+			if(src[index]=='\0')//NULL->\0
 			{
 				// output[bit]=-1;
 				output->size=bit-2;
@@ -127,6 +127,8 @@ void visit()
 void BFSInit(ALGraph* graph,ListD* demand)
 {
 	UListD* pD=demand->next->next;
+
+	int count=0;
 	while(pD)
 	{
 		int source=pD->data;
@@ -145,6 +147,9 @@ void BFSInit(ALGraph* graph,ListD* demand)
 
 		while(visitVex<visitVexMax&&trans.size()!=0)
 		{
+			//-----------------1 1000000 1000000 1000000 100000
+
+
 			int vex=trans.front();
 			trans.pop();
 			EdgeNode* p=graph->adjList[vex].firstEdgeI;
@@ -163,7 +168,18 @@ void BFSInit(ALGraph* graph,ListD* demand)
 				}
 				p=p->next;
 			}
+			// if(count==1)
+			// {
+			// 	/////////////////////////////////////////////////////////
+			//     unsigned short result[] = {1, 5, 4};//示例中的一个解
+			//     for (int i = 0; i < 3; i++)
+			//         record_result(result[i]);
+			//     return;
+			// 	/////////////////////////////////////////////////////////
+			// }
 		}
+
+	    count++;
 		pD=pD->next;
 	}
 
@@ -189,11 +205,6 @@ int roughSearch(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &o
 	bool visited[graph->vexNum];
 
 
-	typedef struct 
-	{
-		int data;
-		int vex;	
-	}Unit;
 
 	// reflect.push(make_pair(0,src));
 	// ReflectNodeLink firstreflect=(ReflectNodeLink)malloc(sizeof(ReflectNode));
@@ -472,7 +483,6 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 	
 	// int finalIdex=src;
 	bool visited[graph->vexNum];
-
 
 
 
@@ -871,7 +881,7 @@ int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &resul
 //你要完成的功能总入口
 void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 {
-
+//------------ok
 
 	ALGraph graph;
 	graph.vexNum=0;
@@ -886,6 +896,12 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 	for(unsigned int i=0;i<MAX_NUM;i++)
 	{
 		graph.adjList[i].firstEdge=NULL;
+		graph.adjList[i].data=i;
+	}
+
+	for(unsigned int i=0;i<MAX_NUM;i++)
+	{
+		graph.adjList[i].firstEdgeI=NULL;
 		graph.adjList[i].data=i;
 	}
 
@@ -933,7 +949,9 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 
 	ListD demandList;
 	sToVD(demand,&demandList);
-	
+//-----------ok
+
+
 	// int temp1[10];
 	// sToV(topo[1],temp);
 	// sToVD(demand,temp1);
@@ -996,12 +1014,19 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 	}
 	printf("\n");
 
+//--------------------------ok
+
+
 	BFSInit(&graph,&demandList);
+	// return ;
+//---------------------------1000000 0 0 0 0 0 0 0 0 0 0
+
 	printf("Info List;\n");
 	for(unsigned int i=0;i<graph.vexNum;i++)
 	{
 		printf("%d:%d\n",i,graph.adjList[i].infoVal);
 	}
+
 
 	std::vector<int>edgePath;
 	if(goThrough(&graph,&demandList,demandList.begin,demandList.end,edgePath)==-1)
@@ -1009,7 +1034,8 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 	{	
 		return;
 	}
-	
+//--------------------------1000000 0 100000 100000 100000 100000 100000  100000
+
 
 	printf("\nFinal Path:\n");
 	for(unsigned int i=0;i<edgePath.size();i++)
@@ -1021,8 +1047,16 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 
     // for (int i = 0; i < 3; i++)
     //     record_result(result[i]);
-    for (unsigned int i = 0; i < edgePath.size(); i++)
-        record_result(edgePath[i]);
+    //------------------------------1000000 0 100000 100000 100000 100000 100000  100000
+	// /////////////////////////////////////////////////////////
+ //    unsigned short result[] = {1, 5, 4};//示例中的一个解
+ //    for (int i = 0; i < 3; i++)
+ //        record_result(result[i]);
+ //    return;
+	// /////////////////////////////////////////////////////////
+
+    for (int i = 0; i < (int)edgePath.size(); i++)
+        record_result((unsigned short)edgePath[i]);
     // for (int i = 0; i < edgePath.size(); i++)
     // {
     // 	printf("%d ",edgePath[i]);
