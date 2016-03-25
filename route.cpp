@@ -186,283 +186,283 @@ void BFSInit(ALGraph* graph,ListD* demand)
 }
 
 
-int roughSearch(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &output)
-{
-	using namespace std;
+// int roughSearch(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &output)
+// {
+// 	using namespace std;
 
 
-	// clock_t start = clock();
+// 	// clock_t start = clock();
 
-	vector<int> path;
-	vector<int> pathEdge;
-	path.push_back(src);
-	pathEdge.push_back(-1);
-	// pathEdge.push_back(-1)
-	// stack<pair<int,int> >reflect;//<stepth,who,route>;
-	vector<ReflectNode> reflect1;
+// 	vector<int> path;
+// 	vector<int> pathEdge;
+// 	path.push_back(src);
+// 	pathEdge.push_back(-1);
+// 	// pathEdge.push_back(-1)
+// 	// stack<pair<int,int> >reflect;//<stepth,who,route>;
+// 	vector<ReflectNode> reflect1;
 	
-	// int finalIdex=src;
-	bool visited[graph->vexNum];
+// 	// int finalIdex=src;
+// 	bool visited[graph->vexNum];
 
 
 
-	// reflect.push(make_pair(0,src));
-	// ReflectNodeLink firstreflect=(ReflectNodeLink)malloc(sizeof(ReflectNode));
-	// reflect1.push_back(make_pair(0,src));
-	ReflectNode firstReflect;
-	firstReflect.stepth=0;
-	firstReflect.edgeID=-1;
-	firstReflect.nodeID=src;
-	reflect1.push_back(firstReflect);
+// 	// reflect.push(make_pair(0,src));
+// 	// ReflectNodeLink firstreflect=(ReflectNodeLink)malloc(sizeof(ReflectNode));
+// 	// reflect1.push_back(make_pair(0,src));
+// 	ReflectNode firstReflect;
+// 	firstReflect.stepth=0;
+// 	firstReflect.edgeID=-1;
+// 	firstReflect.nodeID=src;
+// 	reflect1.push_back(firstReflect);
 
 
-	bool satisfied=false;
-	PathNodeLink result;//result of Dij
-	//while(reflect.size()&&!satisfied)
-	while(reflect1.size()&&!satisfied)
-	{
+// 	bool satisfied=false;
+// 	PathNodeLink result;//result of Dij
+// 	//while(reflect.size()&&!satisfied)
+// 	while(reflect1.size()&&!satisfied)
+// 	{
 		
-		// clock_t end = (clock() - start)/CLOCKS_PER_SEC;
+// 		// clock_t end = (clock() - start)/CLOCKS_PER_SEC;
 		
-		// printf("%d s\n",end);
-		// if(end>7)
-		// {
-		// 	return -1;
-		// }
-		// pair<int,int>tmp=reflect.top();
-		// int autoSize=reflect1.size()/2;
-		// autoSize=(autoSize==0?1:autoSize);
-		int randIndex=reflect1.size()-1;//clock()%reflect1.size();////rand->clock
+// 		// printf("%d s\n",end);
+// 		// if(end>7)
+// 		// {
+// 		// 	return -1;
+// 		// }
+// 		// pair<int,int>tmp=reflect.top();
+// 		// int autoSize=reflect1.size()/2;
+// 		// autoSize=(autoSize==0?1:autoSize);
+// 		int randIndex=reflect1.size()-1;//clock()%reflect1.size();////rand->clock
 		
-		// printf("****%lu\n",clock());
-		// printf("****%lu\n",reflect1.size());
-		// pair<int,int>tmp=reflect1[randIndex];//`````````````````edit
-		ReflectNode tmp=reflect1[randIndex];
-		//reflect.pop();
-		// printf("reflect1 size: %lu",reflect1.size());
-		reflect1.resize(randIndex+1);
+// 		// printf("****%lu\n",clock());
+// 		// printf("****%lu\n",reflect1.size());
+// 		// pair<int,int>tmp=reflect1[randIndex];//`````````````````edit
+// 		ReflectNode tmp=reflect1[randIndex];
+// 		//reflect.pop();
+// 		// printf("reflect1 size: %lu",reflect1.size());
+// 		reflect1.resize(randIndex+1);
 
-		//reflect1.erase(reflect1.begin()+randIndex);
-		// printf("reflect1 size: %lu",reflect1.size());
+// 		//reflect1.erase(reflect1.begin()+randIndex);
+// 		// printf("reflect1 size: %lu",reflect1.size());
 
-		// EdgeNode *p=graph->adjList[tmp.second].firstEdge;
-		// path[tmp.first]=tmp.second;
-		EdgeNode *p=graph->adjList[tmp.nodeID].firstEdge;
-		path[tmp.stepth]=tmp.nodeID;
-		pathEdge[tmp.stepth]=tmp.edgeID;
+// 		// EdgeNode *p=graph->adjList[tmp.second].firstEdge;
+// 		// path[tmp.first]=tmp.second;
+// 		EdgeNode *p=graph->adjList[tmp.nodeID].firstEdge;
+// 		path[tmp.stepth]=tmp.nodeID;
+// 		pathEdge[tmp.stepth]=tmp.edgeID;
 
-		//init demanded vex;
-		vector<int> demandVisited;
-		UListD* pD=demand->next->next;
-		while(pD)
-		{
-			demandVisited.push_back(pD->data);
-			pD=pD->next;
-		}
+// 		//init demanded vex;
+// 		vector<int> demandVisited;
+// 		UListD* pD=demand->next->next;
+// 		while(pD)
+// 		{
+// 			demandVisited.push_back(pD->data);
+// 			pD=pD->next;
+// 		}
 
-		for(unsigned int i=0;i<graph->vexNum;i++)
-		{
-			visited[i]=false;
-		}
+// 		for(unsigned int i=0;i<graph->vexNum;i++)
+// 		{
+// 			visited[i]=false;
+// 		}
 		
-		path.resize(tmp.stepth+1);//rebuild the path
-		pathEdge.resize(tmp.stepth+1);
+// 		path.resize(tmp.stepth+1);//rebuild the path
+// 		pathEdge.resize(tmp.stepth+1);
 
-		for(unsigned int i=0;i<path.size();i++)
-		{
-			visited[path[i]]=true;
+// 		for(unsigned int i=0;i<path.size();i++)
+// 		{
+// 			visited[path[i]]=true;
 
-			for(unsigned int j=0;j<demandVisited.size();j++)
-			{
-				if(demandVisited[j]==path[i])
-				{
-					demandVisited.erase(demandVisited.begin()+j);
-				}
-			}
-		}
+// 			for(unsigned int j=0;j<demandVisited.size();j++)
+// 			{
+// 				if(demandVisited[j]==path[i])
+// 				{
+// 					demandVisited.erase(demandVisited.begin()+j);
+// 				}
+// 			}
+// 		}
 
 
 
-		while(path.back()!=des&&p)
-		{
-			// int maxVal=-1;
-			int choice=-1;
-			int choiceEdge=-1;
-			// vector<Unit>choice List;//---------------------------Last night -_-
+// 		while(path.back()!=des&&p)
+// 		{
+// 			// int maxVal=-1;
+// 			int choice=-1;
+// 			int choiceEdge=-1;
+// 			// vector<Unit>choice List;//---------------------------Last night -_-
 			
-			EdgeNode *_p=p;
-			//search the node with biggest val
-			while(p)
-			{
-				if(visited[p->adjvex]==false)
-				{
-					//??????????????visited[p->adjvex]=true;
-					choice=p->adjvex;
-				}
-				p=p->next;
-			}
+// 			EdgeNode *_p=p;
+// 			//search the node with biggest val
+// 			while(p)
+// 			{
+// 				if(visited[p->adjvex]==false)
+// 				{
+// 					//??????????????visited[p->adjvex]=true;
+// 					choice=p->adjvex;
+// 				}
+// 				p=p->next;
+// 			}
 			
 			
 
-			if(choice==-1)
-				break;
-			visited[choice]=true;
+// 			if(choice==-1)
+// 				break;
+// 			visited[choice]=true;
 
-// printf("here???\n");
-			//push the some biggest node into stack
-			while(_p)
-			{
-				if(visited[_p->adjvex]==false)
-				{
-						ReflectNode tmp;
-						tmp.stepth=path.size();
-						tmp.nodeID=_p->adjvex;
-						tmp.edgeID=_p->edgeID;
-						reflect1.push_back(tmp);
+// // printf("here???\n");
+// 			//push the some biggest node into stack
+// 			while(_p)
+// 			{
+// 				if(visited[_p->adjvex]==false)
+// 				{
+// 						ReflectNode tmp;
+// 						tmp.stepth=path.size();
+// 						tmp.nodeID=_p->adjvex;
+// 						tmp.edgeID=_p->edgeID;
+// 						reflect1.push_back(tmp);
 
-				}
-				_p=_p->next;
-			}
+// 				}
+// 				_p=_p->next;
+// 			}
 
-			// printf("<<<%lu\n",path.size());
-			path.push_back(choice);
-			pathEdge.push_back(choiceEdge);
-			// printf("%d>>>\n",path.size());
+// 			// printf("<<<%lu\n",path.size());
+// 			path.push_back(choice);
+// 			pathEdge.push_back(choiceEdge);
+// 			// printf("%d>>>\n",path.size());
 
-						//finalIdex++;
-			p=graph->adjList[choice].firstEdge;
+// 						//finalIdex++;
+// 			p=graph->adjList[choice].firstEdge;
 
-			//erase the required node visited
-			for(unsigned int i=0;i<demandVisited.size();i++)
-			{
-				if(demandVisited[i]==choice)
-				{
-					demandVisited.erase(demandVisited.begin()+i);
-				}
-			}
+// 			//erase the required node visited
+// 			for(unsigned int i=0;i<demandVisited.size();i++)
+// 			{
+// 				if(demandVisited[i]==choice)
+// 				{
+// 					demandVisited.erase(demandVisited.begin()+i);
+// 				}
+// 			}
 
-			if(demandVisited.size()==0)
-			{
-				satisfied=true;
-				break;
-			}
+// 			if(demandVisited.size()==0)
+// 			{
+// 				satisfied=true;
+// 				break;
+// 			}
 
-			// //accelerate
-			// int perCost=graph->vexNum/demand->size;
-			// int predicCost=perCost*(demand->size-demandVisited.size());
-			// printf("theory:%d real:%d \n",predicCost,path.size() );
-			// if(path.size()>predicCost+50)
-			// {
-			// 	printf("break\n");
-			// 	break;
-			// }
-		}
+// 			// //accelerate
+// 			// int perCost=graph->vexNum/demand->size;
+// 			// int predicCost=perCost*(demand->size-demandVisited.size());
+// 			// printf("theory:%d real:%d \n",predicCost,path.size() );
+// 			// if(path.size()>predicCost+50)
+// 			// {
+// 			// 	printf("break\n");
+// 			// 	break;
+// 			// }
+// 		}
 
-		//the demand are found
-		if(satisfied==true)
-		{
-			printf("\nPathNode(%lu) is :\n",path.size());
-			for(unsigned int i=0;i<path.size();i++)
-			{
-				printf("%d->",path[i]);
-			}
+// 		//the demand are found
+// 		if(satisfied==true)
+// 		{
+// 			printf("\nPathNode(%lu) is :\n",path.size());
+// 			for(unsigned int i=0;i<path.size();i++)
+// 			{
+// 				printf("%d->",path[i]);
+// 			}
 
-			// // pathEdge.erase(pathEdge.begin());
-			printf("\nPathEdge(%lu) is :\n",pathEdge.size());
-			for(unsigned int i=0;i<pathEdge.size();i++)
-			{
-				printf("%d->",pathEdge[i]);
-			}
+// 			// // pathEdge.erase(pathEdge.begin());
+// 			printf("\nPathEdge(%lu) is :\n",pathEdge.size());
+// 			for(unsigned int i=0;i<pathEdge.size();i++)
+// 			{
+// 				printf("%d->",pathEdge[i]);
+// 			}
 
-			printf("\nDemand(%lu) is :\n",demandVisited.size());
-			for(unsigned int i=0;i<demandVisited.size();i++)
-			{
-				printf("%d ",demandVisited[i]);
-			}
+// 			printf("\nDemand(%lu) is :\n",demandVisited.size());
+// 			for(unsigned int i=0;i<demandVisited.size();i++)
+// 			{
+// 				printf("%d ",demandVisited[i]);
+// 			}
 
-			printf("Info List;\n");
-			for(unsigned int i=0;i<graph->vexNum;i++)
-			{
-				printf("%d:%d\n",i,graph->adjList[i].infoVal);
-			}
+// 			printf("Info List;\n");
+// 			for(unsigned int i=0;i<graph->vexNum;i++)
+// 			{
+// 				printf("%d:%d\n",i,graph->adjList[i].infoVal);
+// 			}
 
-			if(dijMa(graph,path.back(),des,visited,result)==-1)
-			{
-				satisfied=false;
-				printf("we go back to the %dth way...\n",randIndex);
-				printf("DIJ Fail\n");
-			}
-			// getchar();
+// 			if(dijMa(graph,path.back(),des,visited,result)==-1)
+// 			{
+// 				satisfied=false;
+// 				printf("we go back to the %dth way...\n",randIndex);
+// 				printf("DIJ Fail\n");
+// 			}
+// 			// getchar();
 
-		}
+// 		}
 
-			// printf("\nPathNode(%lu) is :\n",path.size());
-			// for(int i=0;i<path.size();i++)
-			// {
-			// 	printf("%d->",path[i]);
-			// }
+// 			// printf("\nPathNode(%lu) is :\n",path.size());
+// 			// for(int i=0;i<path.size();i++)
+// 			// {
+// 			// 	printf("%d->",path[i]);
+// 			// }
 
-			// // // pathEdge.erase(pathEdge.begin());
-			// printf("\nPathEdge(%lu) is :\n",pathEdge.size());
-			// for(int i=0;i<pathEdge.size();i++)
-			// {
-			// 	printf("%d->",pathEdge[i]);
-			// }
+// 			// // // pathEdge.erase(pathEdge.begin());
+// 			// printf("\nPathEdge(%lu) is :\n",pathEdge.size());
+// 			// for(int i=0;i<pathEdge.size();i++)
+// 			// {
+// 			// 	printf("%d->",pathEdge[i]);
+// 			// }
 
-		printf("\nDemand(%lu) is :\n",demandVisited.size());
-		for(unsigned int i=0;i<demandVisited.size();i++)
-		{
-			printf("%d ",demandVisited[i]);
-		}
-		printf(">>>>%lu\n",reflect1.size());
+// 		printf("\nDemand(%lu) is :\n",demandVisited.size());
+// 		for(unsigned int i=0;i<demandVisited.size();i++)
+// 		{
+// 			printf("%d ",demandVisited[i]);
+// 		}
+// 		printf(">>>>%lu\n",reflect1.size());
 
-	}
-	printf(">>>>%d\n",satisfied);
-	// PathNodeLink result;//=(PathNodeLink)malloc(sizeof(PathNode));;
-	// result->path=new vector<int>();
-	// result->path->push_back(1);
-	// printf("%lu\n",result->path->size());
-	// dijMa(graph,path.back(),des,visited,result);
-
-
-	// if(result==NULL)
-	// {
-	// 	printf("%s\n", );
-	// }
-	// printf("!!!!!\n");
-	// printf("%d\n",result->path);
-	vector<int> &tmpPath=*(result->path);
-	// printf("?????\n");
-
-	printf("DIJMA:\n");
-	for(unsigned int i=0;i<tmpPath.size();i++)
-	{
-		printf("%d->",tmpPath[i]);
-	}
-
-	vector<int> &tmpPathEdge=*(result->pathEdge);
-	printf("\nDIJMAPath:\n");
-	for(unsigned int i=0;i<tmpPathEdge.size();i++)
-	{
-		printf("%d->",tmpPathEdge[i]);
-	}
+// 	}
+// 	printf(">>>>%d\n",satisfied);
+// 	// PathNodeLink result;//=(PathNodeLink)malloc(sizeof(PathNode));;
+// 	// result->path=new vector<int>();
+// 	// result->path->push_back(1);
+// 	// printf("%lu\n",result->path->size());
+// 	// dijMa(graph,path.back(),des,visited,result);
 
 
-	output.resize(0);
-	for(unsigned int i=1;i<pathEdge.size();i++)
-	{
-		output.push_back(pathEdge[i]);
-	}
-	for(unsigned int i=1;i<tmpPathEdge.size();i++)
-	{
-		output.push_back(tmpPathEdge[i]);
-	}
+// 	// if(result==NULL)
+// 	// {
+// 	// 	printf("%s\n", );
+// 	// }
+// 	// printf("!!!!!\n");
+// 	// printf("%d\n",result->path);
+// 	vector<int> &tmpPath=*(result->path);
+// 	// printf("?????\n");
 
-	printf("Done\n");
+// 	printf("DIJMA:\n");
+// 	for(unsigned int i=0;i<tmpPath.size();i++)
+// 	{
+// 		printf("%d->",tmpPath[i]);
+// 	}
 
-	return 0;
+// 	vector<int> &tmpPathEdge=*(result->pathEdge);
+// 	printf("\nDIJMAPath:\n");
+// 	for(unsigned int i=0;i<tmpPathEdge.size();i++)
+// 	{
+// 		printf("%d->",tmpPathEdge[i]);
+// 	}
 
-}
+
+// 	output.resize(0);
+// 	for(unsigned int i=1;i<pathEdge.size();i++)
+// 	{
+// 		output.push_back(pathEdge[i]);
+// 	}
+// 	for(unsigned int i=1;i<tmpPathEdge.size();i++)
+// 	{
+// 		output.push_back(tmpPathEdge[i]);
+// 	}
+
+// 	printf("Done\n");
+
+// 	return 0;
+
+// }
 
 
 
@@ -692,7 +692,7 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 				printf("we go back to the %dth way...\n",randIndex);
 				printf("DIJ Fail\n");
 			}
-			// getchar();
+			getchar();
 
 		}
 
@@ -714,10 +714,9 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 		{
 			printf("%d ",demandVisited[i]);
 		}
-		printf(">>>>%lu\n",reflect1.size());
+		printf("\nThe reflect stack sizels: %lu\n",reflect1.size());
 
 	}
-	printf(">>>>%d\n",satisfied);
 	// PathNodeLink result;//=(PathNodeLink)malloc(sizeof(PathNode));;
 	// result->path=new vector<int>();
 	// result->path->push_back(1);
@@ -998,7 +997,6 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 		printf("%d|",tmp->data);
 		tmp=tmp->next;
 	}
-	
 	printf("\n");
 
 
@@ -1023,12 +1021,12 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 	// return ;
 //---------------------------1000000 0 0 0 0 0 0 0 0 0 0
 
-	// printf("Info List;\n");
-	// for(unsigned int i=0;i<graph.vexNum;i++)
-	// {
-	// 	printf("%d:%d\n",i,graph.adjList[i].infoVal);
-	// }
-
+	printf("Info List;\n");
+	for(unsigned int i=0;i<graph.vexNum;i++)
+	{
+		printf("%d:%d\n",i,graph.adjList[i].infoVal);
+	}
+	getchar();
 
 	std::vector<int>edgePath;
 	if(goThrough(&graph,&demandList,demandList.begin,demandList.end,edgePath)==-1)
