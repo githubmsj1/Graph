@@ -45,6 +45,7 @@ typedef struct VexNode
 	EdgeNode *firstEdgeI;
 	unsigned long *code;
 	unsigned long vexNum;
+	unsigned long edgeINum;
 	int infoVal;
 }VexNode,AdjList[MAX_NUM];
 
@@ -76,6 +77,8 @@ typedef struct
 	int edgeID;
 	int stepth;
 }ReflectNode,*ReflectNodeLink;
+
+
 void search_route(char *graph[5000], unsigned int edge_num, char *condition);
 int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &result);
 #endif

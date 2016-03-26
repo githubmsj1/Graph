@@ -127,8 +127,14 @@ void visit()
 void BFSInit(ALGraph* graph,ListD* demand)
 {
 	UListD* pD=demand->next->next;
+	
 
 	// int count=0;
+	for (int i = 0; i < graph->vexNum; ++i)
+	{
+		graph->adjList[i].infoVal=0;
+	}
+
 	while(pD)
 	{
 		int source=pD->data;
@@ -141,7 +147,7 @@ void BFSInit(ALGraph* graph,ListD* demand)
 		}
 		visited[source]=true;
 		trans.push(source);
-		graph->adjList[source].infoVal=graph->vexNum;
+		graph->adjList[source].infoVal=graph->vexNum;//cover -> no cover
 		int visitVex=1;
 		int visitVexMax=((float)graph->vexNum)/demand->size;//*0.8*4/demand->size;
 
@@ -159,10 +165,22 @@ void BFSInit(ALGraph* graph,ListD* demand)
 				{
 					visited[p->adjvex]=true;
 					visitVex++;
-					graph->adjList[p->adjvex].infoVal+=graph->adjList[vex].infoVal/3;//-50;//50;
-					if(graph->adjList[p->adjvex].infoVal<0)
+					if(graph->adjList[vex].edgeINum==1)
+					{
+						graph->adjList[p->adjvex].infoVal+=graph->adjList[vex].infoVal;
+					}
+					else
+					{
+						graph->adjList[p->adjvex].infoVal+=graph->adjList[vex].infoVal/3;//-50;//50;
+					}
+
+					if(graph->adjList[p->adjvex].infoVal<0)//max(0,x)
 					{
 						graph->adjList[p->adjvex].infoVal=1;
+					}
+					if(graph->adjList[p->adjvex].infoVal>graph->vexNum)//min(x,max)
+					{
+						graph->adjList[p->adjvex].infoVal=graph->vexNum;
 					}
 					trans.push(p->adjvex);
 				}
@@ -566,8 +584,12 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 		while(path.back()!=des&&p)
 		{
 			int maxVal=-1;
+			int minVal=graph->vexNum+1;//high weight
+
 			int choice=-1;
 			int choiceEdge=-1;
+			int choiceBad=-1;
+			int choiceEdgeBad=-1;
 			// vector<Unit>choice List;//---------------------------Last night -_-
 			
 			EdgeNode *_p=p;
@@ -583,6 +605,13 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 						choice=p->adjvex;
 						choiceEdge=p->edgeID;
 					}
+					if(graph->adjList[p->adjvex].infoVal<minVal)
+					{
+						minVal=graph->adjList[p->adjvex].infoVal;
+						choiceBad=p->adjvex;
+						choiceEdgeBad=p->edgeID;
+
+					}
 				}
 				p=p->next;
 			}
@@ -591,6 +620,21 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 
 			if(choice==-1)
 				break;
+
+			//random to choose a not best path,but the worst path
+			// int u=clock()%100;
+			// if(u>=100)
+			// {
+			// 	choice=choiceBad;
+			// 	choiceEdge=choiceEdgeBad;
+			// 	// printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!choose bad(%d)!!!!!!!!!!!!!!!!!!!!!!!\n",u);
+			// }
+			// else
+			// {
+			// 	// printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!choose good(%d)!!!!!!!!!!!!!!!!!!!!!!!\n",u);
+			// }
+
+
 			visited[choice]=true;
 
 // printf("here???\n");
@@ -692,7 +736,7 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 				printf("we go back to the %dth way...\n",randIndex);
 				printf("DIJ Fail\n");
 			}
-			getchar();
+			// getchar();
 
 		}
 
@@ -895,14 +939,12 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 	for(unsigned int i=0;i<MAX_NUM;i++)
 	{
 		graph.adjList[i].firstEdge=NULL;
-		graph.adjList[i].data=i;
-	}
-
-	for(unsigned int i=0;i<MAX_NUM;i++)
-	{
 		graph.adjList[i].firstEdgeI=NULL;
 		graph.adjList[i].data=i;
+		graph.adjList[i].edgeINum=0;
 	}
+
+
 
 	//read the lata from the char* and store it in to a graph 
 	int maxNode=0;
@@ -925,7 +967,7 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 		e->edgeID=i;
 		e->next=graph.adjList[temp[2]].firstEdgeI;
 		graph.adjList[temp[2]].firstEdgeI=e;
-
+		graph.adjList[temp[2]].edgeINum++;//count edge numbers
 
 		if(maxNode<temp[1])
 		{
@@ -979,7 +1021,7 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 		printf("input :\n");
 	for(unsigned int i=0;i<graph.vexNum;i++)
 	{
-		printf("%d:",i);
+		printf("%d(%lu):",i,graph.adjList[i].edgeINum);
 		EdgeLink p=graph.adjList[i].firstEdgeI;
 		while(p!=NULL)
 		{
@@ -1026,7 +1068,7 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 	{
 		printf("%d:%d\n",i,graph.adjList[i].infoVal);
 	}
-	getchar();
+	// getchar();
 
 	std::vector<int>edgePath;
 	if(goThrough(&graph,&demandList,demandList.begin,demandList.end,edgePath)==-1)
