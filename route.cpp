@@ -130,7 +130,7 @@ void BFSInit(ALGraph* graph,ListD* demand)
 	
 
 	// int count=0;
-	for (int i = 0; i < graph->vexNum; ++i)
+	for (unsigned int i = 0; i < graph->vexNum; ++i)
 	{
 		graph->adjList[i].infoVal=0;
 	}
@@ -178,7 +178,7 @@ void BFSInit(ALGraph* graph,ListD* demand)
 					{
 						graph->adjList[p->adjvex].infoVal=1;
 					}
-					if(graph->adjList[p->adjvex].infoVal>graph->vexNum)//min(x,max)
+					if(graph->adjList[p->adjvex].infoVal>(int)graph->vexNum)//min(x,max)
 					{
 						graph->adjList[p->adjvex].infoVal=graph->vexNum;
 					}
@@ -584,12 +584,12 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 		while(path.back()!=des&&p)
 		{
 			int maxVal=-1;
-			int minVal=graph->vexNum+1;//high weight
+			// int minVal=graph->vexNum+1;//high weight
 
 			int choice=-1;
 			int choiceEdge=-1;
-			int choiceBad=-1;
-			int choiceEdgeBad=-1;
+			// int choiceBad=-1;
+			// int choiceEdgeBad=-1;
 			// vector<Unit>choice List;//---------------------------Last night -_-
 			
 			EdgeNode *_p=p;
@@ -605,13 +605,13 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 						choice=p->adjvex;
 						choiceEdge=p->edgeID;
 					}
-					if(graph->adjList[p->adjvex].infoVal<minVal)
-					{
-						minVal=graph->adjList[p->adjvex].infoVal;
-						choiceBad=p->adjvex;
-						choiceEdgeBad=p->edgeID;
+					// if(graph->adjList[p->adjvex].infoVal<minVal)
+					// {
+					// 	minVal=graph->adjList[p->adjvex].infoVal;
+					// 	choiceBad=p->adjvex;
+					// 	choiceEdgeBad=p->edgeID;
 
-					}
+					// }
 				}
 				p=p->next;
 			}
@@ -921,6 +921,102 @@ int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &resul
 	 
 
 }
+
+
+//*****************************************class define********************************//
+Probablity::Probablity(unsigned int _numDemand)
+{
+	head=(ProbNodeLink)malloc(sizeof(ProbNode));
+	head->depth=0;
+	// head->numChild=0;
+	// head->next=NULL:
+	head->child=new std::map<int,ProbNode*>();
+	head->val=0;
+
+	numDemand=_numDemand;
+	// variateRate=20;
+}
+
+int Probablity::refresh(std::vector<int> demandPath)
+{
+	ProbNodeLink p;
+	p=head;
+	for(unsigned int i=0;i<demandPath.size();i++)
+	{
+		if(p->child->find(demandPath[i])==p->child->end())
+		{
+			ProbNodeLink tmp=(ProbNodeLink)malloc(sizeof(ProbNode));
+			tmp->child=new std::map<int,ProbNode*>();
+			tmp->depth=i+1;
+			tmp->val=numDemand*4;
+		}
+
+		std::map<int,ProbNode*>& pTmp=*(p->child);
+		p=pTmp[demandPath[i]];
+
+		p->val-=p->depth;
+		if(p->val<0)
+		{
+			p->val=0;
+		}
+
+	}
+	return 0;
+}
+
+bool Probablity::chooseOrNot(std::vector<int> demandPath)
+{
+	ProbNodeLink p;
+	p=head;
+
+	for(unsigned int i=0;i<demandPath.size()-1;i++)
+	{
+		if(p->child->find(demandPath[i])==p->child->end())
+		{
+			ProbNodeLink tmp=(ProbNodeLink)malloc(sizeof(ProbNode));
+			tmp->child=new std::map<int,ProbNodeLink>();
+			tmp->depth=i+1;
+			tmp->val=numDemand*4;
+			p->child->insert(std::pair<int,ProbNodeLink>(demandPath[i],tmp));
+		}
+
+		std::map<int,ProbNode*>& pTmp=*(p->child);
+		p=pTmp[demandPath[i]];
+	}
+
+	if(p->child->find(demandPath.back())==p->child->end())
+	{
+		ProbNodeLink tmp=(ProbNodeLink)malloc(sizeof(ProbNode));
+		tmp->child=new std::map<int,ProbNode*>();
+		tmp->depth=demandPath.size();
+		tmp->val=numDemand*4;
+		p->child->insert(std::pair<int,ProbNodeLink>(demandPath.back(),tmp));
+	}
+
+	//find the best node:max prob val
+	int max=-1;
+	int maxIdx=p->child->begin()->first;
+	for(std::map<int,ProbNodeLink>::iterator i=p->child->begin();i!=p->child->end();i++)
+	{
+		if(i->second->val>max)
+		{
+			max=i->second->val;
+			maxIdx=i->first;
+		}
+	}
+
+	if(demandPath.back()==maxIdx)
+	{
+		if(clock()%100>20)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+//*****************************************class define********************************//
+
 //你要完成的功能总入口
 void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 {

@@ -2,7 +2,7 @@
 #define __ROUTE_H__
 
 #include <vector>
-
+#include <map>
 
 
 #define INF INT_MAX
@@ -77,6 +77,33 @@ typedef struct
 	int edgeID;
 	int stepth;
 }ReflectNode,*ReflectNodeLink;
+
+typedef struct ProbNode
+{
+	int val;//probality
+	// ProbNode *next;
+	std::map<int,ProbNode*>* child;
+	// unsigned int numChild;
+	int depth;
+	int best;
+
+}ProbNode,*ProbNodeLink;
+
+class Probablity
+{
+public:
+	Probablity(unsigned int _numDemand);
+	~Probablity();
+	int refresh(std::vector<int> demandPath);
+	bool chooseOrNot(std::vector<int> demandPath);
+private:
+	// unsigned int variateRate;//full is 100
+	ProbNodeLink head;
+	unsigned int numDemand;
+
+	/* data */
+};
+
 
 
 void search_route(char *graph[5000], unsigned int edge_num, char *condition);
