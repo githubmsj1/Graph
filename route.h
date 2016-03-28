@@ -91,15 +91,15 @@ typedef struct ProbNode
 
 class Probablity
 {
-public:
-	Probablity(unsigned int _numDemand);
-	~Probablity();
-	int refresh(std::vector<int> demandPath);
-	bool chooseOrNot(std::vector<int> demandPath);
-private:
-	// unsigned int variateRate;//full is 100
-	ProbNodeLink head;
-	unsigned int numDemand;
+	public:
+		Probablity(unsigned int _numDemand);
+		~Probablity();
+		int refresh(std::vector<int> &demandPath);
+		bool chooseOrNot(std::vector<int> &demandPath);
+	private:
+		// unsigned int variateRate;//full is 100
+		ProbNodeLink head;
+		unsigned int numDemand;
 
 	/* data */
 };

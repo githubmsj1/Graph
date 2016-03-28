@@ -488,6 +488,18 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 {
 	using namespace std;
 
+	//make a const demand visit 
+	vector<int> demandVisitedConst;
+	UListD* pD=demand->next->next;
+	while(pD)
+	{
+		demandVisitedConst.push_back(pD->data);
+		pD=pD->next;
+	}
+
+	//initialize a probability class 
+	Probablity demandProb(demandVisitedConst.size());
+
 
 	// clock_t start = clock();
 
@@ -531,7 +543,14 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 		// int autoSize=reflect1.size()/2;
 		// autoSize=(autoSize==0?1:autoSize);
 		int randIndex=clock()%reflect1.size();////rand->clock
-		
+		// printf("\nThe stack now is:\n");
+		// printf("\n_________________________\n");
+		// for(unsigned int i=0;i<reflect1.size();i++)
+		// {	
+		// 	printf("[%d] pos:%d  idx%d\n",i,reflect1[i].stepth,reflect1[i].nodeID);
+		// }
+		// printf("\n_________________________\n");
+
 		// printf("****%lu\n",clock());
 		// printf("****%lu\n",reflect1.size());
 		// pair<int,int>tmp=reflect1[randIndex];//`````````````````edit
@@ -542,15 +561,26 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 
 		//reflect1.erase(reflect1.begin()+randIndex);
 		// printf("reflect1 size: %lu",reflect1.size());
-
+		path.resize(tmp.stepth+1);//rebuild the path
+		pathEdge.resize(tmp.stepth+1);
 		// EdgeNode *p=graph->adjList[tmp.second].firstEdge;
 		// path[tmp.first]=tmp.second;
 		EdgeNode *p=graph->adjList[tmp.nodeID].firstEdge;
 		path[tmp.stepth]=tmp.nodeID;
 		pathEdge[tmp.stepth]=tmp.edgeID;
 
+		printf("\nBefore resize\n");
+		printf("\ntmp.stepth:%d  pathsize:%lu\n",tmp.stepth,path.size());
+		for(unsigned int i=0;i<path.size();i++)
+		{
+			printf("%d->",path[i]);
+		}
+
+
 		//init demanded vex;
 		vector<int> demandVisited;
+		vector<int> demandInPath;//extract from path ,have access demand point,don't need to clear
+
 		UListD* pD=demand->next->next;
 		while(pD)
 		{
@@ -563,9 +593,21 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 			visited[i]=false;
 		}
 		
-		path.resize(tmp.stepth+1);//rebuild the path
-		pathEdge.resize(tmp.stepth+1);
 
+		
+
+
+
+		printf("\nreflect ind:%d    back stepth:%d     back node:%d\n",randIndex,tmp.stepth,tmp.nodeID);
+		printf("\nAfter back PathNode(%lu) is :\n",path.size());
+		for(unsigned int i=0;i<path.size();i++)
+		{
+			printf("%d->",path[i]);
+		}
+		// getchar();
+
+
+		//initialize the visited Node and demandNode
 		for(unsigned int i=0;i<path.size();i++)
 		{
 			visited[path[i]]=true;
@@ -575,6 +617,7 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 				if(demandVisited[j]==path[i])
 				{
 					demandVisited.erase(demandVisited.begin()+j);
+					demandInPath.push_back(path[i]);
 				}
 			}
 		}
@@ -583,6 +626,14 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 
 		while(path.back()!=des&&p)
 		{
+
+			// printf("\nPath(%lu) is :\n",path.size());
+			// for(unsigned int i=0;i<path.size();i++)
+			// {
+			// 	printf("%d->",path[i]);
+			// }
+
+
 			int maxVal=-1;
 			// int minVal=graph->vexNum+1;//high weight
 
@@ -616,28 +667,49 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 				p=p->next;
 			}
 			
-			
 
-			if(choice==-1)
-				break;
+			//judge whether the node is the required node 
+			//if yes judge it if it is the best one
+			//chose it as the next node if hit probability
+			//otherwise don't take it
+			if(choice!=-1)
+			{
+				for(unsigned int i=0;i<demandVisited.size();i++)
+				{
+					if(demandVisited[i]==choice)
+					{
+						demandInPath.push_back(demandVisited[i]);
 
-			//random to choose a not best path,but the worst path
-			// int u=clock()%100;
-			// if(u>=100)
-			// {
-			// 	choice=choiceBad;
-			// 	choiceEdge=choiceEdgeBad;
-			// 	// printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!choose bad(%d)!!!!!!!!!!!!!!!!!!!!!!!\n",u);
-			// }
-			// else
-			// {
-			// 	// printf("\n!!!!!!!!!!!!!!!!!!!!!!!!!!choose good(%d)!!!!!!!!!!!!!!!!!!!!!!!\n",u);
-			// }
+						if(demandProb.chooseOrNot(demandInPath)==false)
+						{
+							printf("choose false\n");
+							choice=-2;
+							demandInPath.pop_back();
+							break;
+						}
+						else
+						{
+							printf("choose true\n");
+							demandInPath.pop_back();
+							break;
+						}
+						
+					}
+				}
+			}
+
+			if(choice==des)
+			{
+				choice=-1;
+			}
 
 
-			visited[choice]=true;
 
-// printf("here???\n");
+	
+
+
+
+
 			//push the some biggest node into stack
 			while(_p)
 			{
@@ -653,7 +725,7 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 						tmp.edgeID=_p->edgeID;
 						reflect1.push_back(tmp);
 					}
-					else if(((float)graph->adjList[_p->adjvex].infoVal)/(float)maxVal>0.1)
+					else if(((float)graph->adjList[_p->adjvex].infoVal)/(float)maxVal>=0)//>0.1
 					{
 						// reflect.push(make_pair(path.size(),_p->adjvex));
 						// reflect1.push_back(make_pair(path.size(),_p->adjvex));
@@ -666,8 +738,31 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 					}
 				}
 				_p=_p->next;
+
 			}
 
+
+
+
+
+			//break if quit the next step
+			printf("\nchoice=%d\n",choice);
+			if(choice==-2)
+			{
+				printf("not choose the best\n");
+				break;
+			}
+			if(choice==-1)//can't find the next node,maybe find a loop
+			{
+				printf("dead route\n");
+				// getchar();
+				demandProb.refresh(demandInPath);
+				break;
+			}
+			visited[choice]=true;
+
+
+			// printf("path.push_back(choice);\n");
 			// printf("<<<%lu\n",path.size());
 			path.push_back(choice);
 			pathEdge.push_back(choiceEdge);
@@ -676,21 +771,23 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 						//finalIdex++;
 			p=graph->adjList[choice].firstEdge;
 
+			// printf("for(unsigned int i=0;i<demandVisited.size();i++)\n");
 			//erase the required node visited
 			for(unsigned int i=0;i<demandVisited.size();i++)
 			{
 				if(demandVisited[i]==choice)
 				{
 					demandVisited.erase(demandVisited.begin()+i);
+					demandInPath.push_back(choice);
 				}
 			}
 
 			if(demandVisited.size()==0)
 			{
+				printf("all demand node are found\n");
 				satisfied=true;
 				break;
 			}
-
 			// //accelerate
 			// int perCost=graph->vexNum/demand->size;
 			// int predicCost=perCost*(demand->size-demandVisited.size());
@@ -700,6 +797,7 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 			// 	printf("break\n");
 			// 	break;
 			// }
+			// printf("%d %d\n",path.back(),des);
 		}
 
 		//the demand are found
@@ -740,11 +838,11 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 
 		}
 
-			// printf("\nPathNode(%lu) is :\n",path.size());
-			// for(unsigned int i=0;i<path.size();i++)
-			// {
-			// 	printf("%d->",path[i]);
-			// }
+			printf("\nPathNode(%lu) is :\n",path.size());
+			for(unsigned int i=0;i<path.size();i++)
+			{
+				printf("%d->",path[i]);
+			}
 
 			// // // pathEdge.erase(pathEdge.begin());
 			// printf("\nPathEdge(%lu) is :\n",pathEdge.size());
@@ -753,12 +851,23 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 			// 	printf("%d->",pathEdge[i]);
 			// }
 
-		printf("\nDemand(%lu) is :\n",demandVisited.size());
-		for(unsigned int i=0;i<demandVisited.size();i++)
-		{
-			printf("%d ",demandVisited[i]);
-		}
-		printf("\nThe reflect stack sizels: %lu\n",reflect1.size());
+		
+		// printf("\nDemand(%lu) is :\n",demandVisited.size());
+		// for(unsigned int i=0;i<demandVisited.size();i++)
+		// {
+		// 	printf("%d ",demandVisited[i]);
+		// }
+
+		// printf("\nDemand Visited(%lu) is :\n",demandInPath.size());
+		// for(unsigned int i=0;i<demandInPath.size();i++)
+		// {
+		// 	printf("%d ",demandInPath[i]);
+		// }
+
+		printf("\nThe reflect stack size is: %lu\n",reflect1.size());
+		printf("it is ready to back");
+		// getchar();
+
 
 	}
 	// PathNodeLink result;//=(PathNodeLink)malloc(sizeof(PathNode));;
@@ -936,8 +1045,10 @@ Probablity::Probablity(unsigned int _numDemand)
 	numDemand=_numDemand;
 	// variateRate=20;
 }
+Probablity::~Probablity()
+{}
 
-int Probablity::refresh(std::vector<int> demandPath)
+int Probablity::refresh(std::vector<int> &demandPath)
 {
 	ProbNodeLink p;
 	p=head;
@@ -949,12 +1060,16 @@ int Probablity::refresh(std::vector<int> demandPath)
 			tmp->child=new std::map<int,ProbNode*>();
 			tmp->depth=i+1;
 			tmp->val=numDemand*4;
+			p->child->insert(std::pair<int,ProbNodeLink>(demandPath[i],tmp));
 		}
 
 		std::map<int,ProbNode*>& pTmp=*(p->child);
 		p=pTmp[demandPath[i]];
 
 		p->val-=p->depth;
+		// cout<<"index: "<<demandPath[i]<<"   ";
+		// cout<<"val: "<<p->val<<"   ";
+		// cout<<"depth: "<<p->depth<<endl;
 		if(p->val<0)
 		{
 			p->val=0;
@@ -964,7 +1079,7 @@ int Probablity::refresh(std::vector<int> demandPath)
 	return 0;
 }
 
-bool Probablity::chooseOrNot(std::vector<int> demandPath)
+bool Probablity::chooseOrNot(std::vector<int> &demandPath)
 {
 	ProbNodeLink p;
 	p=head;
@@ -1003,14 +1118,41 @@ bool Probablity::chooseOrNot(std::vector<int> demandPath)
 			max=i->second->val;
 			maxIdx=i->first;
 		}
+		// printf("%d\n",i->first);
 	}
 
+	printf("\n*************************************************\n");
+	printf("best Idx: %d   max pro: %d   \n",maxIdx,max);
+	printf("demandPath: \n");
+	for (unsigned int i=0;i<demandPath.size();i++)
+	{
+		printf("%d ",demandPath[i]);
+	}
+
+	printf("\nThe vals are: \n");
+	for(std::map<int,ProbNodeLink>::iterator i=p->child->begin();i!=p->child->end();i++)
+	{
+		printf("%d(%d)",i->first,i->second->val);
+		// printf("%d\n",i->first);
+	}
+
+
+	printf("\n*************************************************\n");
+	// getchar();
+
+
+	std::map<int,ProbNodeLink> &tmpchild=*(p->child);
 	if(demandPath.back()==maxIdx)
 	{
-		if(clock()%100>20)
+		// getchar();
+		if(clock()%100<20&&tmpchild[maxIdx]->val!=(int)numDemand*4)
 		{
-			return true;
+			// getchar();
+			printf("\nvariation\n");
+			return false;
 		}
+		return true;
+		
 	}
 
 	return false;
@@ -1028,8 +1170,6 @@ void search_route(char *topo[5000],unsigned int edge_num, char *demand)
 
 	int temp[4]={0,0,0,0};
 	EdgeLink e;
-
-
 
 
 	for(unsigned int i=0;i<MAX_NUM;i++)
