@@ -572,12 +572,12 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 		path[tmp.stepth]=tmp.nodeID;
 		pathEdge[tmp.stepth]=tmp.edgeID;
 
-		printf("\nBefore resize\n");
-		printf("\ntmp.stepth:%d  pathsize:%lu\n",tmp.stepth,path.size());
-		for(unsigned int i=0;i<path.size();i++)
-		{
-			printf("%d->",path[i]);
-		}
+		// printf("\nBefore resize\n");
+		// printf("\ntmp.stepth:%d  pathsize:%lu\n",tmp.stepth,path.size());
+		// for(unsigned int i=0;i<path.size();i++)
+		// {
+		// 	printf("%d->",path[i]);
+		// }
 
 
 		//init demanded vex;
@@ -675,31 +675,7 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 			//if yes judge it if it is the best one
 			//chose it as the next node if hit probability
 			//otherwise don't take it
-			if(choice!=-1)
-			{
-				for(unsigned int i=0;i<demandVisited.size();i++)
-				{
-					if(demandVisited[i]==choice)
-					{
-						demandInPath.push_back(demandVisited[i]);
-
-						if(demandProb.chooseOrNot(demandInPath)==false)
-						{
-							printf("choose false\n");
-							choice=-2;
-							demandInPath.pop_back();
-							break;
-						}
-						else
-						{
-							printf("choose true\n");
-							demandInPath.pop_back();
-							break;
-						}
-						
-					}
-				}
-			}
+			
 
 			if(choice==des)
 			{
@@ -743,129 +719,6 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 
 
 
-
-			//break if quit the next step
-			printf("\nchoice=%d\n",choice);
-			if(choice==-2)//last night........
-			{
-
-				int bestIdx=demandProb.getTheBestIdx(demandInPath);
-				bool _visited[graph->vexNum];
-				vector<int>desIdxs;
-				for(unsigned int i=0;i<graph->vexNum;i++)
-				{
-					_visited[i]=visited[i];
-				}
-
-				//two case:
-				//1.variation exclude the best,include the demand (non-visited in current depth and not the best)
-				//2.include the best and the non visited in current depth
-
-
-				printf("not choose the demand\n");
-				printf("Because ");
-
-				if(demandProb.getFlag()==QUIT_BEST)
-				{
-					printf("quit best\n");
-					_visited[bestIdx]=true;
-					_visited[des]=true;
-					for(unsigned int i=0;i<demandVisited.size();i++)
-					{
-						if(_visited[demandVisited[i]]==false)
-						{
-							desIdxs.push_back(demandVisited[i]);
-						}
-					}
-
-				}
-				else if(demandProb.getFlag()==WANT_BEST)
-				{
-					printf("want best\n");
-					demandProb.pushNotBestVisited(demandInPath,_visited);
-					// printf("asdasdasdas\n");
-
-					_visited[des]=true;
-					desIdxs.push_back(bestIdx);
-					for(unsigned int i=0;i<demandVisited.size();i++)
-					{
-						if(_visited[demandVisited[i]]==false)
-						{
-							desIdxs.push_back(demandVisited[i]);
-						}
-					}
-				}
-				else
-				{
-					printf("error\n");
-				}
-				// break;
-				
-				
-				printf("find the best...%d\n",bestIdx);
-				// 
-				// tmpBestidx.push_back(bestidx);
-				// dijMa(graph,path.back(),bestidx,_visited,result);
-				// printf("found");
-				// getchar();
-				// break;
-				if(dijMaAdvanced(graph,path.back(),desIdxs,_visited,result)==-1)
-				{
-					printf("DIJ fail can't find\n");
-					break;
-				}
-				else
-				{
-
-					//merge
-					// path.resize(path.size()+result->path->size()-1);
-					// pathEdge.resize(pathEdge.size()+result->pathEdge->size()-1);
-					vector<int> &tmpPath=*(result->path);
-
-					vector<int> &tmpPathEdge=*(result->pathEdge);
-
-					for(unsigned int i=1;i<tmpPath.size();i++)
-					{
-						path.push_back(tmpPath[i]);
-					}
-
-					for(unsigned int i=1;i<tmpPathEdge.size();i++)
-					{
-						pathEdge.push_back(tmpPathEdge[i]);
-					}
-
-					//clean result
-					clearVector(*result->path);
-					clearVector(*result->pathEdge);
-					free(result);
-
-					//re generate
-					for (unsigned int i = 0; i < path.size();i++)
-					{
-						visited[path[i]]=true;
-					}
-
-					p=graph->adjList[path.back()].firstEdge;
-
-					for(unsigned int i=0;i<demandVisited.size();i++)
-					{
-						if(demandVisited[i]==path.back())
-						{
-							demandVisited.erase(demandVisited.begin()+i);
-							demandInPath.push_back(path.back());
-						}
-					}
-					if(demandVisited.size()==0)
-					{
-						printf("all demand node are found\n");
-						satisfied=true;
-						break;
-					}
-					continue;
-
-				}
-				
-			}
 
 			if(choice==-1)//can't find the next node,maybe find a loop
 			{
@@ -1047,6 +900,7 @@ void clearVector(std::vector<int>&src)
 	std::vector<int> tmp;
 	tmp.swap(src); 
 }
+
 int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &result)//copy the visit don't destroy
 {
 	using namespace std;
