@@ -10,7 +10,9 @@
 #include <algorithm>  
 #include <time.h>
 
-
+#define QUIT_BEST 0
+#define	CHOS_BEST 1
+#define WANT_BEST 2
 
 
 void sToVD(char *src, ListD* output)
@@ -527,7 +529,8 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 
 
 	bool satisfied=false;
-	PathNodeLink result;//result of Dij
+	PathNodeLink result=NULL;//result of Dij
+
 	//while(reflect.size()&&!satisfied)
 	while(reflect1.size()&&!satisfied)
 	{
@@ -705,10 +708,6 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 
 
 
-	
-
-
-
 
 			//push the some biggest node into stack
 			while(_p)
@@ -747,11 +746,127 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 
 			//break if quit the next step
 			printf("\nchoice=%d\n",choice);
-			if(choice==-2)
+			if(choice==-2)//last night........
 			{
-				printf("not choose the best\n");
-				break;
+
+				int bestIdx=demandProb.getTheBestIdx(demandInPath);
+				bool _visited[graph->vexNum];
+				vector<int>desIdxs;
+				for(unsigned int i=0;i<graph->vexNum;i++)
+				{
+					_visited[i]=visited[i];
+				}
+
+				//two case:
+				//1.variation exclude the best,include the demand (non-visited in current depth and not the best)
+				//2.include the best and the non visited in current depth
+
+
+				printf("not choose the demand\n");
+				printf("Because ");
+
+				if(demandProb.getFlag()==QUIT_BEST)
+				{
+					printf("quit best\n");
+					_visited[bestIdx]=true;
+					_visited[des]=true;
+					for(unsigned int i=0;i<demandVisited.size();i++)
+					{
+						if(_visited[demandVisited[i]]==false)
+						{
+							desIdxs.push_back(demandVisited[i]);
+						}
+					}
+
+				}
+				else if(demandProb.getFlag()==WANT_BEST)
+				{
+					printf("want best\n");
+					demandProb.pushNotBestVisited(demandInPath,_visited);
+					// printf("asdasdasdas\n");
+
+					_visited[des]=true;
+					desIdxs.push_back(bestIdx);
+					for(unsigned int i=0;i<demandVisited.size();i++)
+					{
+						if(_visited[demandVisited[i]]==false)
+						{
+							desIdxs.push_back(demandVisited[i]);
+						}
+					}
+				}
+				else
+				{
+					printf("error\n");
+				}
+				// break;
+				
+				
+				printf("find the best...%d\n",bestIdx);
+				// 
+				// tmpBestidx.push_back(bestidx);
+				// dijMa(graph,path.back(),bestidx,_visited,result);
+				// printf("found");
+				// getchar();
+				// break;
+				if(dijMaAdvanced(graph,path.back(),desIdxs,_visited,result)==-1)
+				{
+					printf("DIJ fail can't find\n");
+					break;
+				}
+				else
+				{
+
+					//merge
+					// path.resize(path.size()+result->path->size()-1);
+					// pathEdge.resize(pathEdge.size()+result->pathEdge->size()-1);
+					vector<int> &tmpPath=*(result->path);
+
+					vector<int> &tmpPathEdge=*(result->pathEdge);
+
+					for(unsigned int i=1;i<tmpPath.size();i++)
+					{
+						path.push_back(tmpPath[i]);
+					}
+
+					for(unsigned int i=1;i<tmpPathEdge.size();i++)
+					{
+						pathEdge.push_back(tmpPathEdge[i]);
+					}
+
+					//clean result
+					clearVector(*result->path);
+					clearVector(*result->pathEdge);
+					free(result);
+
+					//re generate
+					for (unsigned int i = 0; i < path.size();i++)
+					{
+						visited[path[i]]=true;
+					}
+
+					p=graph->adjList[path.back()].firstEdge;
+
+					for(unsigned int i=0;i<demandVisited.size();i++)
+					{
+						if(demandVisited[i]==path.back())
+						{
+							demandVisited.erase(demandVisited.begin()+i);
+							demandInPath.push_back(path.back());
+						}
+					}
+					if(demandVisited.size()==0)
+					{
+						printf("all demand node are found\n");
+						satisfied=true;
+						break;
+					}
+					continue;
+
+				}
+				
 			}
+
 			if(choice==-1)//can't find the next node,maybe find a loop
 			{
 				printf("dead route\n");
@@ -759,20 +874,24 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 				demandProb.refresh(demandInPath);
 				break;
 			}
+
+
+			//set the choice visited
 			visited[choice]=true;
 
 
-			// printf("path.push_back(choice);\n");
-			// printf("<<<%lu\n",path.size());
+
+			//push the the choice into current route
 			path.push_back(choice);
 			pathEdge.push_back(choiceEdge);
-			// printf("%d>>>\n",path.size());
 
-						//finalIdex++;
+
+			//give the next node list
 			p=graph->adjList[choice].firstEdge;
 
-			// printf("for(unsigned int i=0;i<demandVisited.size();i++)\n");
+
 			//erase the required node visited
+			//deleted the demand needed list if the current node is demand
 			for(unsigned int i=0;i<demandVisited.size();i++)
 			{
 				if(demandVisited[i]==choice)
@@ -782,6 +901,7 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 				}
 			}
 
+			//finish find the demand
 			if(demandVisited.size()==0)
 			{
 				printf("all demand node are found\n");
@@ -828,7 +948,9 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 			// 	printf("%d:%d\n",i,graph->adjList[i].infoVal);
 			// }
 
-			if(dijMa(graph,path.back(),des,visited,result)==-1)
+			vector<int>desVec;
+			desVec.push_back(des);
+			if(dijMaAdvanced(graph,path.back(),desVec,visited,result)==-1)//dijMa(graph,path.back(),des,visited,result)==-1)
 			{
 				satisfied=false;
 				printf("we go back to the %dth way...\n",randIndex);
@@ -910,6 +1032,11 @@ int goThrough(ALGraph* graph,ListD* demand,int src,int des,std::vector<int> &out
 		output.push_back(tmpPathEdge[i]);
 	}
 
+	// clearVector(*result->pathEdge);
+	// clearVector(*result->path);
+	// free(result);
+
+
 	printf("Done\n");
 
 	return 0;
@@ -920,15 +1047,42 @@ void clearVector(std::vector<int>&src)
 	std::vector<int> tmp;
 	tmp.swap(src); 
 }
-int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &result)
+int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &result)//copy the visit don't destroy
 {
 	using namespace std;
+
+
+	// //clean result
+	// if(result!=NULL)
+	// {
+
+	// 	if(result->path!=NULL)
+	// 	{
+			
+	// 		clearVector(*result->path);
+	// 	}
+
+	// 	if(result->pathEdge!=NULL)
+	// 	{
+	// 		clearVector(*result->pathEdge);
+	// 	}
+	// 	free(result);
+	// }
+
+
+
+
 	int dist[graph->vexNum];
 	for(unsigned int i=0;i<graph->vexNum;i++)
 	{
 		dist[i]=INF;
 	}
 
+	bool visited1[graph->vexNum];
+	for(unsigned int i=0;i<graph->vexNum;i++)
+	{
+		visited1[i]=visited[i];
+	}
 
 	vector<PathNodeLink>pool;
 	// vector<PathNodeLink>result;
@@ -944,7 +1098,7 @@ int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &resul
 	src->pathEdge->push_back(-1);
 	// printf("!!!!\n");
 	pool.push_back(src);
-	visited[srcVex]=false;
+	visited1[srcVex]=false;
 
 	// printf("?????%lu\n",pool.size());
 	while(!pool.empty())
@@ -956,14 +1110,16 @@ int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &resul
 		// result
 
 
-		if(visited[top->idx])
+		if(visited1[top->idx])
 		{	
 
 			clearVector(*top->path);
+			clearVector(*top->pathEdge);
+
 			free(top);
 			continue;
 		}
-		visited[top->idx]=true;
+		visited1[top->idx]=true;
 
 
 		if(top->idx==desVex)
@@ -980,7 +1136,7 @@ int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &resul
 		while(p)
 		{
 
-			if(!visited[p->adjvex]&&(cw+p->weight)<dist[p->adjvex])
+			if(!visited1[p->adjvex]&&(cw+p->weight)<dist[p->adjvex])
 			{
 
 				dist[p->adjvex]=cw+p->weight;
@@ -1031,6 +1187,143 @@ int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &resul
 
 }
 
+int dijMaAdvanced(ALGraph *graph,int srcVex,std::vector<int> desVex,bool *visited,PathNodeLink &result)//copy the visit don't destroy
+{
+	using namespace std;
+	
+	// //clean result
+	// if(result!=NULL)
+	// {
+	// 	if(result->path!=NULL)
+	// 	{
+			
+	// 		clearVector(*result->path);
+	// 	}
+	// 	if(result->pathEdge!=NULL)
+	// 	{
+	// 		clearVector(*result->pathEdge);
+	// 	}
+	// 	free(result);
+	// }
+
+
+
+	int dist[graph->vexNum];
+	for(unsigned int i=0;i<graph->vexNum;i++)
+	{
+		dist[i]=INF;
+	}
+
+	bool visited1[graph->vexNum];
+	for(unsigned int i=0;i<graph->vexNum;i++)
+	{
+		visited1[i]=visited[i];
+	}
+
+	vector<PathNodeLink>pool;
+	// vector<PathNodeLink>result;
+
+	PathNodeLink src=(PathNodeLink)malloc(sizeof(PathNode));
+
+	src->idx=srcVex;
+	src->weight=0;
+	// printf("????%lu\n",src->path.size());
+	src->path=new vector<int>();
+	src->pathEdge=new vector<int>();
+	src->path->push_back(srcVex);
+	src->pathEdge->push_back(-1);
+	// printf("!!!!\n");
+	pool.push_back(src);
+	visited1[srcVex]=false;
+
+	// printf("?????%lu\n",pool.size());
+	while(!pool.empty())
+	{
+
+
+		PathNodeLink top=pool.front();
+		pool.erase(pool.begin());
+		// result
+
+
+		if(visited1[top->idx])
+		{	
+
+			clearVector(*top->path);
+			clearVector(*top->pathEdge);
+
+			free(top);
+			continue;
+		}
+		visited1[top->idx]=true;
+
+
+		for(unsigned int i=0;i<desVex.size();i++)
+		{
+			if(top->idx==desVex[i])
+			{
+				result=top;
+				printf("Got........\n");
+				return 0;
+				// break;
+			}
+		}
+
+		EdgeNode *p=graph->adjList[top->idx].firstEdge;
+		int cw=top->weight;
+
+		while(p)
+		{
+
+			if(!visited1[p->adjvex]&&(cw+p->weight)<dist[p->adjvex])
+			{
+
+				dist[p->adjvex]=cw+p->weight;
+
+				PathNodeLink tmp=(PathNodeLink)malloc(sizeof(PathNode));
+				tmp->idx=p->adjvex;
+				tmp->weight=dist[p->adjvex];
+				tmp->path=new vector<int>();
+				tmp->pathEdge=new vector<int>();
+				vector<int> &tmpPath=*(top->path);
+				vector<int> &tmpPathEdge=*(top->pathEdge);
+
+				for(unsigned int i=0;i<top->path->size();i++)
+				{
+					tmp->path->push_back(tmpPath[i]);
+					tmp->pathEdge->push_back(tmpPathEdge[i]);
+				}
+				tmp->path->push_back(p->adjvex);
+				tmp->pathEdge->push_back(p->edgeID);
+				
+				//push the new element into the pool
+				unsigned int poolSize=pool.size();
+				for(unsigned int i=0;i<pool.size();i++)
+				{
+					if(tmp->weight<pool[i]->weight)
+					{
+						pool.insert(pool.begin()+i,tmp);
+						break;
+					}
+				}
+				if(pool.size()==poolSize)
+				{
+					// printf("pool have new element\n");
+					pool.push_back(tmp);
+				}
+				
+			}
+
+			p=p->next;
+
+		}
+
+		
+
+	}
+	return -1;
+}
+
 
 //*****************************************class define********************************//
 Probablity::Probablity(unsigned int _numDemand)
@@ -1048,6 +1341,10 @@ Probablity::Probablity(unsigned int _numDemand)
 Probablity::~Probablity()
 {}
 
+int Probablity::getFlag()
+{
+	return flag;
+}
 int Probablity::refresh(std::vector<int> &demandPath)
 {
 	ProbNodeLink p;
@@ -1066,7 +1363,7 @@ int Probablity::refresh(std::vector<int> &demandPath)
 		std::map<int,ProbNode*>& pTmp=*(p->child);
 		p=pTmp[demandPath[i]];
 
-		p->val-=p->depth;
+		p->val-=p->depth;//minus not depth
 		// cout<<"index: "<<demandPath[i]<<"   ";
 		// cout<<"val: "<<p->val<<"   ";
 		// cout<<"depth: "<<p->depth<<endl;
@@ -1078,6 +1375,117 @@ int Probablity::refresh(std::vector<int> &demandPath)
 	}
 	return 0;
 }
+int Probablity::establish(std::vector<int> &demandPath)
+{
+
+	ProbNodeLink p;
+	p=head;
+
+	for(unsigned int i=0;i<demandPath.size();i++)
+	{
+		if(p->child->find(demandPath[i])==p->child->end())
+		{
+			ProbNodeLink tmp=(ProbNodeLink)malloc(sizeof(ProbNode));
+			tmp->child=new std::map<int,ProbNodeLink>();
+			tmp->depth=i+1;
+			tmp->val=numDemand*4;
+			p->child->insert(std::pair<int,ProbNodeLink>(demandPath[i],tmp));
+		}
+
+		std::map<int,ProbNode*>& pTmp=*(p->child);
+		p=pTmp[demandPath[i]];
+	}
+
+	return 0;
+}
+
+
+int Probablity::getTheBestIdx(std::vector<int> &demandPath)
+{
+	ProbNodeLink p;
+	p=head;
+
+	for(unsigned int i=0;i<demandPath.size();i++)
+	{
+		if(p->child->find(demandPath[i])==p->child->end())
+		{
+			ProbNodeLink tmp=(ProbNodeLink)malloc(sizeof(ProbNode));
+			tmp->child=new std::map<int,ProbNodeLink>();
+			tmp->depth=i+1;
+			tmp->val=numDemand*4;
+			p->child->insert(std::pair<int,ProbNodeLink>(demandPath[i],tmp));
+		}
+
+		std::map<int,ProbNode*>& pTmp=*(p->child);
+		p=pTmp[demandPath[i]];
+	}
+
+	
+
+	//find the best node:max prob val
+	int max=-1;
+	int maxIdx=p->child->begin()->first;
+	for(std::map<int,ProbNodeLink>::iterator i=p->child->begin();i!=p->child->end();i++)
+	{
+		if(i->second->val>max)
+		{
+			max=i->second->val;
+			maxIdx=i->first;
+		}
+		// printf("%d\n",i->first);
+	}
+
+	return maxIdx;
+}
+
+int Probablity::pushNotBestVisited(std::vector<int> &demandPath,bool *visited)
+{
+	ProbNodeLink p;
+	p=head;
+
+	for(unsigned int i=0;i<demandPath.size();i++)
+	{
+		if(p->child->find(demandPath[i])==p->child->end())
+		{
+			ProbNodeLink tmp=(ProbNodeLink)malloc(sizeof(ProbNode));
+			tmp->child=new std::map<int,ProbNodeLink>();
+			tmp->depth=i+1;
+			tmp->val=numDemand*4;
+			p->child->insert(std::pair<int,ProbNodeLink>(demandPath[i],tmp));
+		}
+
+		std::map<int,ProbNode*>& pTmp=*(p->child);
+		p=pTmp[demandPath[i]];
+	}
+
+	
+
+	//find the best node:max prob val
+	int max=-1;
+	int maxIdx=p->child->begin()->first;
+	for(std::map<int,ProbNodeLink>::iterator i=p->child->begin();i!=p->child->end();i++)
+	{
+		if(i->second->val>max)
+		{
+			max=i->second->val;
+			maxIdx=i->first;
+		}
+		// printf("%d\n",i->first);
+	}
+	for(std::map<int,ProbNodeLink>::iterator i=p->child->begin();i!=p->child->end();i++)
+	{
+		if(i->first!=maxIdx)
+		{
+			visited[i->first]=true;
+		}
+		// printf("%d\n",i->first);
+	}
+
+
+	return 0;
+}
+
+
 
 bool Probablity::chooseOrNot(std::vector<int> &demandPath)
 {
@@ -1149,12 +1557,14 @@ bool Probablity::chooseOrNot(std::vector<int> &demandPath)
 		{
 			// getchar();
 			printf("\nvariation\n");
+			flag=QUIT_BEST;
 			return false;
 		}
+		flag=CHOS_BEST;
 		return true;
 		
 	}
-
+	flag=WANT_BEST;
 	return false;
 }
 //*****************************************class define********************************//

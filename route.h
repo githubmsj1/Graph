@@ -96,10 +96,15 @@ class Probablity
 		~Probablity();
 		int refresh(std::vector<int> &demandPath);
 		bool chooseOrNot(std::vector<int> &demandPath);
+		int getTheBestIdx(std::vector<int> &demandPath);
+		int pushNotBestVisited(std::vector<int> &demandPath,bool *visited);
+		int establish(std::vector<int> &demandPath);
+		int getFlag();
 	private:
 		// unsigned int variateRate;//full is 100
 		ProbNodeLink head;
 		unsigned int numDemand;
+		int flag;
 
 	/* data */
 };
@@ -108,4 +113,7 @@ class Probablity
 
 void search_route(char *graph[5000], unsigned int edge_num, char *condition);
 int dijMa(ALGraph *graph,int srcVex,int desVex,bool *visited,PathNodeLink &result);
+int dijMaAdvanced(ALGraph *graph,int srcVex,std::vector<int> desVex,bool *visited,PathNodeLink &result);//copy the visit don't destroy
+
+void clearVector(std::vector<int>&src);
 #endif
